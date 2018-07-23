@@ -11,46 +11,46 @@ c = Configuration()
 c.assert_hostname = False
 Configuration.set_default(c)
 api = core_v1_api.CoreV1Api()
-name = 'busybox-test'
+name = 'dubbo-admin-fp94l'
 
 resp = None
 try:
     resp = api.read_namespaced_pod(name=name,
-                                   namespace='default')
+                                   namespace='test01')
 except ApiException as e:
     if e.status != 404:
         print("Unknown error: %s" % e)
         exit(1)
 
-if not resp:
-    print("Pod %s does not exits. Creating it..." % name)
-    pod_manifest = {
-        'apiVersion': 'v1',
-        'kind': 'Pod',
-        'metadata': {
-            'name': name
-        },
-        'spec': {
-            'containers': [{
-                'image': 'busybox',
-                'name': 'sleep',
-                "args": [
-                    "/bin/sh",
-                    "-c",
-                    "while true;do date;sleep 5; done"
-                ]
-            }]
-        }
-    }
-    resp = api.create_namespaced_pod(body=pod_manifest,
-                                     namespace='default')
-    while True:
-        resp = api.read_namespaced_pod(name=name,
-                                       namespace='default')
-        if resp.status.phase != 'Pending':
-            break
-        time.sleep(1)
-    print("Done.")
+# if not resp:
+#     print("Pod %s does not exits. Creating it..." % name)
+#     pod_manifest = {
+#         'apiVersion': 'v1',
+#         'kind': 'Pod',
+#         'metadata': {
+#             'name': name
+#         },
+#         'spec': {
+#             'containers': [{
+#                 'image': 'busybox',
+#                 'name': 'sleep',
+#                 "args": [
+#                     "/bin/sh",
+#                     "-c",
+#                     "while true;do date;sleep 5; done"
+#                 ]
+#             }]
+#         }
+#     }
+#     resp = api.create_namespaced_pod(body=pod_manifest,
+#                                      namespace='default')
+#     while True:
+#         resp = api.read_namespaced_pod(name=name,
+#                                        namespace='default')
+#         if resp.status.phase != 'Pending':
+#             break
+#         time.sleep(1)
+#     print("Done.")
 
 
 # calling exec and wait for response.
@@ -58,7 +58,7 @@ exec_command = [
     '/bin/sh',
     '-c',
     'echo This message goes to stderr >&2; echo This message goes to stdout']
-resp = stream(api.connect_get_namespaced_pod_exec, name, 'default',
+resp = stream(api.connect_get_namespaced_pod_exec, name, 'test01',
               command=exec_command,
               stderr=True, stdin=False,
               stdout=True, tty=False)
@@ -66,7 +66,7 @@ print("Response: " + resp)
 
 # Calling exec interactively.
 exec_command = ['/bin/sh']
-resp = stream(api.connect_get_namespaced_pod_exec, name, 'default',
+resp = stream(api.connect_get_namespaced_pod_exec, name, 'test01',
               command=exec_command,
               stderr=True, stdin=True,
               stdout=True, tty=False,
